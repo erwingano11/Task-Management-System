@@ -2,7 +2,7 @@ import "./TaskList.css";
 import TaskItem from "./TaskItem";
 
 function TaskList({ tasks, onDeleteTask, onUpdateTask }) {
-  if (tasks.length === 0) {
+  if (!Array.isArray(tasks) || tasks.length === 0) {
     return (
       <div className="empty-state">
         <p>No tasks yet. Create your first task above!</p>
