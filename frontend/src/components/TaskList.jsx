@@ -10,13 +10,19 @@ function TaskList({ tasks, onDeleteTask, onUpdateTask }) {
     );
   }
 
+  // Debug: log tasks without IDs
+  const tasksWithoutIds = tasks.filter((t) => !t.id);
+  if (tasksWithoutIds.length > 0) {
+    console.warn("Warning: Some tasks are missing IDs:", tasksWithoutIds);
+  }
+
   return (
     <div className="task-list">
       <h2>Tasks ({tasks.length})</h2>
       <div className="tasks-container">
-        {tasks.map((task) => (
+        {tasks.map((task, index) => (
           <TaskItem
-            key={task.id}
+            key={task.id || `task-${index}`}
             task={task}
             onDelete={onDeleteTask}
             onUpdate={onUpdateTask}

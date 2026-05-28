@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 const taskRoutes = require("./routes/tasks");
 const userRoutes = require("./routes/users");
@@ -9,6 +10,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/tasks", taskRoutes);
@@ -22,9 +24,9 @@ app.get("/health", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: "Internal Server Error",
-    message: err.message 
+    message: err.message,
   });
 });
 

@@ -1,15 +1,28 @@
 import { useState, useEffect } from "react";
 import TaskList from "./components/TaskList";
 import TaskForm from "./components/TaskForm";
+import { testApiConnection } from "./config/apiConfig";
 import "./App.css";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [apiReady, setApiReady] = useState(false);
 
   useEffect(() => {
-    fetchTasks();
+    const initializeApp = async () => {
+      const isApiReady = await testApiConnection();
+      setApiReady(isApiReady);
+      if (isApiReady) {
+        fetchTasks();
+      } else {
+        setError(
+          "Cannot connect to backend. Make sure the server is running on http://localhost:5000",
+        );
+      }
+    };
+    initializeApp();
   }, []);
 
   const fetchTasks = async () => {
@@ -57,7 +70,9 @@ function App() {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
       if (!response.ok) {
         throw new Error(`Server responded with status ${response.status}`);
       }
@@ -79,11 +94,8 @@ function App() {
       if (!response.ok) {
         throw new Error(`Server responded with status ${response.status}`);
       }
-      setTasks(
-        tasks.map((task) =>
-          task.id === taskId ? { ...task, ...updates } : task,
-        ),
-      );
+      const updatedTask = await response.json();
+      setTasks(tasks.map((task) => (task.id === taskId ? updatedTask : task)));
       setError(null);
     } catch (err) {
       setError(`Failed to update task: ${err.message}`);

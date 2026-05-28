@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   status ENUM('pending', 'in-progress', 'completed') DEFAULT 'pending',
   assignedTo VARCHAR(36),
+  timeSpent INT DEFAULT 0 COMMENT 'Time spent in minutes',
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  completedAt TIMESTAMP NULL COMMENT 'Timestamp when task was completed',
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (assignedTo) REFERENCES users(id) ON DELETE SET NULL
 );

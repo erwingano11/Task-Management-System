@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Management API - Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-group button {
+            margin: 0;
+        }
+
+        .response {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .response.success {
+            border-color: #28a745;
+            background: #f0f9ff;
+        }
+
+        .response.error {
+            border-color: #dc3545;
+            background: #fff5f5;
+            color: #dc3545;
+        }
+
+        .status {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .tasks-list {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: white;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .task-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .task-item p {
+            color: #666;
+            font-size: 0.85rem;
+            margin: 3px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .status-pending {
+            background: #6c757d;
+            color: white;
+        }
+
+        .status-in-progress {
+            background: #ffc107;
+            color: white;
+        }
+
+        .status-completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .health-check {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .health-check.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 Work Management API - Test Page</h1>
+
+        <div id="healthCheck" class="health-check" style="display: none;">
+            <strong id="healthStatus"></strong>
+        </div>
+
+        <div class="sections">
+            <!-- Tasks Section -->
+            <div class="section">
+                <h2>📋 Tasks Management</h2>
+
+                <div class="form-group">
+                    <label>Task Title *</label>
+                    <input type="text" id="taskTitle" placeholder="Enter task title" />
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="taskDescription" placeholder="Enter task description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="taskStatus">
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Assigned To (User ID)</label>
+                    <input type="text" id="taskAssignedTo" placeholder="User ID (optional)" />
+                </div>
+
+                <div class="button-group">
+                    <button onclick="createTask()">➕ Create Task</button>
+                    <button onclick="getAllTasks()">📥 Get All Tasks</button>
+                </div>
+
+                <div id="tasksResponse" class="response" style="display: none;"></div>
+                <div id="tasksList" class="tasks-list" style="display: none;"></div>
+            </div>
+
+            <!-- Users Section -->
+            <div class="section">
+                <h2>👥 Users Management</h2>
+
+                <div class="form-group">
+                    <label>User Name *</label>
+                    <input type="text" id="userName" placeholder="Enter full name" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="userEmail" placeholder="Enter email address" />
+                </div>
+
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="userPassword" placeholder="Enter password" />
+                </div>
+
+                <div class="button-group">
+                    <button onclick="createUser()">➕ Create User</button>
+                    <button onclick="getAllUsers()">📥 Get All Users</button>
+                </div>
+
+                <div id="usersResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- API Tests Section -->
+            <div class="section">
+                <h2>🧪 API Tests</h2>
+
+                <div class="form-group">
+                    <label>Task ID (for Get/Update/Delete)</label>
+                    <input type="text" id="testTaskId" placeholder="Enter task ID" />
+                </div>
+
+                <button onclick="getTaskById()">Get Task by ID</button>
+                <button onclick="deleteTask()">Delete Task</button>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+                <div class="form-group">
+                    <label>User ID (for Get/Update/Delete)</label>
+                    <input type="text" id="testUserId" placeholder="Enter user ID" />
+                </div>
+
+                <button onclick="getUserById()">Get User by ID</button>
+                <button onclick="deleteUser()">Delete User</button>
+
+                <div id="testResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="section">
+                <h2>ℹ️ API Information</h2>
+
+                <h4 style="color: #667eea; margin: 15px 0 10px 0;">Available Endpoints:</h4>
+
+                <p><strong>Tasks:</strong></p>
+                <ul style="margin-left: 15px; margin-bottom: 15px;">
+                    <li>GET /api/tasks</li>
+                    <li>GET /api/tasks/:id</li>
+                    <li>POST /api/tasks</li>
+                    <li>PUT /api/tasks/:id</li>
+                    <li>DELETE /api/tasks/:id</li>
+                </ul>
+
+                <p><strong>Users:</strong></p>
+                <ul style="margin-left: 15px;">
+                    <li>GET /api/users</li>
+                    <li>GET /api/users/:id</li>
+                    <li>POST /api/users</li>
+                    <li>PUT /api/users/:id</li>
+                    <li>DELETE /api/users/:id</li>
+                </ul>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+                <button onclick="checkHealth()">🏥 Check Server Health</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // Health Check
+        async function checkHealth() {
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                showHealthCheck(true, `✅ Server is running: ${data.status}`);
+            } catch (error) {
+                showHealthCheck(false, `❌ Server is not running: ${error.message}`);
+            }
+        }
+
+        function showHealthCheck(isHealthy, message) {
+            const element = document.getElementById('healthCheck');
+            element.style.display = 'block';
+            element.className = isHealthy ? 'health-check' : 'health-check error';
+            document.getElementById('healthStatus').textContent = message;
+        }
+
+        // Tasks Functions
+        async function createTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const status = document.getElementById('taskStatus').value;
+            const assignedTo = document.getElementById('taskAssignedTo').value;
+
+            if (!title) {
+                alert('Please enter a task title');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, status, assignedTo })
+                });
+
+                const data = await response.json();
+                showResponse('tasksResponse', response.ok, JSON.stringify(data, null, 2));
+
+                if (response.ok) {
+                    document.getElementById('taskTitle').value = '';
+                    document.getElementById('taskDescription').value = '';
+                    document.getElementById('taskAssignedTo').value = '';
+                }
+            } catch (error) {
+                showResponse('tasksResponse', false, error.message);
+            }
+        }
+
+        async function getAllTasks() {
+            try {
+                const response = await fetch(`${API_URL}/tasks`);
+                const data = await response.json();
+
+                if (response.ok && Array.isArray(data)) {
+                    displayTasks(data);
+                    showResponse('tasksResponse', true, `✅ ${data.length} task(s) retrieved`);
+                } else {
+                    showResponse('tasksResponse', false, JSON.stringify(data, null, 2));
+                }
+            } catch (error) {
+                showResponse('tasksResponse', false, error.message);
+            }
+        }
+
+        async function getTaskById() {
+            const id = document.getElementById('testTaskId').value;
+            if (!id) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/tasks/${id}`);
+                const data = await response.json();
+                showResponse('testResponse', response.ok, JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResponse('testResponse', false, error.message);
+            }
+        }
+
+        async function deleteTask() {
+            const id = document.getElementById('testTaskId').value;
+            if (!id) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this task?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                showResponse('testResponse', response.ok, JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResponse('testResponse', false, error.message);
+            }
+        }
+
+        function displayTasks(tasks) {
+            const listDiv = document.getElementById('tasksList');
+            listDiv.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'task-item';
+                taskEl.innerHTML = `
+                    <h4>${task.title}</h4>
+                    <p><strong>ID:</strong> ${task.id}</p>
+                    ${task.description ? `<p><strong>Description:</strong> ${task.description}</p>` : ''}
+                    <p><strong>Assigned To:</strong> ${task.assignedTo || 'Unassigned'}</p>
+                    <span class="status-badge status-${task.status}">${task.status}</span>
+                `;
+                listDiv.appendChild(taskEl);
+            });
+
+            listDiv.style.display = 'block';
+        }
+
+        // Users Functions
+        async function createUser() {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+                showResponse('usersResponse', response.ok, JSON.stringify(data, null, 2));
+
+                if (response.ok) {
+                    document.getElementById('userName').value = '';
+                    document.getElementById('userEmail').value = '';
+                    document.getElementById('userPassword').value = '';
+                }
+            } catch (error) {
+                showResponse('usersResponse', false, error.message);
+            }
+        }
+
+        async function getAllUsers() {
+            try {
+                const response = await fetch(`${API_URL}/users`);
+                const data = await response.json();
+                showResponse('usersResponse', response.ok, JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResponse('usersResponse', false, error.message);
+            }
+        }
+
+        async function getUserById() {
+            const id = document.getElementById('testUserId').value;
+            if (!id) {
+                alert('Please enter a user ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/users/${id}`);
+                const data = await response.json();
+                showResponse('testResponse', response.ok, JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResponse('testResponse', false, error.message);
+            }
+        }
+
+        async function deleteUser() {
+            const id = document.getElementById('testUserId').value;
+            if (!id) {
+                alert('Please enter a user ID');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this user?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                showResponse('testResponse', response.ok, JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResponse('testResponse', false, error.message);
+            }
+        }
+
+        // Helper Functions
+        function showResponse(elementId, isSuccess, message) {
+            const element = document.getElementById(elementId);
+            element.className = `response ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        // Initial health check on page load
+        window.addEventListener('load', () => {
+            checkHealth();
+        });
+    </script>
+</body>
+
+</html>

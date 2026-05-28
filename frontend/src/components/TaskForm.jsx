@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./TaskForm.css";
 
 function TaskForm({ onAddTask }) {
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "pending",
     assignedTo: "",
   });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users");
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,15 +97,20 @@ function TaskForm({ onAddTask }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="assignedTo">Assigned To (User ID)</label>
-          <input
-            type="text"
+          <label htmlFor="assignedTo">Assigned To</label>
+          <select
             id="assignedTo"
             name="assignedTo"
             value={formData.assignedTo}
             onChange={handleChange}
-            placeholder="Enter user ID"
-          />
+          >
+            <option value="">-- No Assignment --</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name} ({user.email})
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
