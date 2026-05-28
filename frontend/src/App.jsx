@@ -14,12 +14,22 @@ function App() {
 
   const fetchTasks = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/tasks");
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
       const data = await response.json();
-      setTasks(data);
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        setTasks([]);
+        setError("Invalid response format from server");
+      }
     } catch (err) {
-      setError("Failed to fetch tasks");
+      setError(`Failed to fetch tasks: ${err.message}`);
+      setTasks([]);
       console.error(err);
     } finally {
       setLoading(false);
@@ -33,38 +43,50 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
       });
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
       const createdTask = await response.json();
       setTasks([...tasks, createdTask]);
+      setError(null);
     } catch (err) {
-      setError("Failed to add task");
+      setError(`Failed to add task: ${err.message}`);
       console.error(err);
     }
   };
 
   const handleDeleteTask = async (taskId) => {
     try {
-      await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      const response = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
       setTasks(tasks.filter((task) => task.id !== taskId));
+      setError(null);
     } catch (err) {
-      setError("Failed to delete task");
+      setError(`Failed to delete task: ${err.message}`);
       console.error(err);
     }
   };
 
   const handleUpdateTask = async (taskId, updates) => {
     try {
-      await fetch(`/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
       setTasks(
         tasks.map((task) =>
           task.id === taskId ? { ...task, ...updates } : task,
         ),
       );
+      setError(null);
     } catch (err) {
-      setError("Failed to update task");
+      setError(`Failed to update task: ${err.message}`);
       console.error(err);
     }
   };
