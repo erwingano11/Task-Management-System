@@ -1,0 +1,6 @@
+Account Management
+
+Support for multiple users under one account
+User roles and permissions (Admin, Manager, Member)
+User invitation and access management
+Profile settings and account dashboard

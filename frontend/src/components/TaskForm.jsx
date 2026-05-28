@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./TaskForm.css";
 
-function TaskForm({ onAddTask }) {
+function TaskForm({ onAddTask, token }) {
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -12,11 +12,16 @@ function TaskForm({ onAddTask }) {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [token]);
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/users");
+      const response = await fetch("/api/account/members", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setUsers(Array.isArray(data) ? data : []);

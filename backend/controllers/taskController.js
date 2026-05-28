@@ -19,8 +19,12 @@ const formatTasks = (tasks) => {
 
 const getAllTasks = async (req, res) => {
   try {
+    const { accountId } = req.user;
     const connection = await pool.getConnection();
-    const [tasks] = await connection.query("SELECT * FROM tasks");
+    const [tasks] = await connection.query(
+      "SELECT * FROM tasks WHERE accountId = ?",
+      [accountId],
+    );
     connection.release();
     res.json(formatTasks(tasks));
   } catch (error) {
@@ -35,10 +39,12 @@ const getAllTasks = async (req, res) => {
 const getTaskById = async (req, res) => {
   try {
     const { id } = req.params;
+    const { accountId } = req.user;
     const connection = await pool.getConnection();
-    const [task] = await connection.query("SELECT * FROM tasks WHERE id = ?", [
-      id,
-    ]);
+    const [task] = await connection.query(
+      "SELECT * FROM tasks WHERE id = ? AND accountId = ?",
+      [id, accountId],
+    );
     connection.release();
     if (task.length === 0) {
       return res.status(404).json({ error: "Task not found" });
@@ -52,11 +58,12 @@ const getTaskById = async (req, res) => {
 const createTask = async (req, res) => {
   try {
     const { title, description, status, assignedTo } = req.body;
+    const { accountId } = req.user;
     const id = uuidv4();
     const connection = await pool.getConnection();
     await connection.query(
-      "INSERT INTO tasks (id, title, description, status, assignedTo, createdAt) VALUES (?, ?, ?, ?, ?, NOW())",
-      [id, title, description, status || "pending", assignedTo],
+      "INSERT INTO tasks (id, title, description, status, assignedTo, accountId, createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+      [id, title, description, status || "pending", assignedTo, accountId],
     );
 
     // Fetch the created task to get timestamps
@@ -75,7 +82,7 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, status, assignedTo } = req.body;
+    const { title, description, status, assignedTo, timeSpent } = req.body;
     const connection = await pool.getConnection();
 
     // Build dynamic update query based on provided fields
@@ -102,6 +109,10 @@ const updateTask = async (req, res) => {
       updates.push("assignedTo = ?");
       params.push(assignedTo || null);
     }
+    if (timeSpent !== undefined) {
+      updates.push("timeSpent = ?");
+      params.push(timeSpent);
+    }
 
     if (updates.length === 0) {
       connection.release();
@@ -109,14 +120,15 @@ const updateTask = async (req, res) => {
     }
 
     params.push(id);
+    params.push(req.user.accountId);
 
-    const updateQuery = `UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`;
+    const updateQuery = `UPDATE tasks SET ${updates.join(", ")} WHERE id = ? AND accountId = ?`;
     await connection.query(updateQuery, params);
 
     // Fetch the updated task to return complete data with timestamps
     const [updatedTask] = await connection.query(
-      "SELECT * FROM tasks WHERE id = ?",
-      [id],
+      "SELECT * FROM tasks WHERE id = ? AND accountId = ?",
+      [id, req.user.accountId],
     );
     connection.release();
 
@@ -130,8 +142,12 @@ const updateTask = async (req, res) => {
 const deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const { accountId } = req.user;
     const connection = await pool.getConnection();
-    await connection.query("DELETE FROM tasks WHERE id = ?", [id]);
+    await connection.query("DELETE FROM tasks WHERE id = ? AND accountId = ?", [
+      id,
+      accountId,
+    ]);
     connection.release();
     res.json({ message: "Task deleted successfully" });
   } catch (error) {

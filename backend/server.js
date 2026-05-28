@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const taskRoutes = require("./routes/tasks");
 const userRoutes = require("./routes/users");
+const authRoutes = require("./routes/auth");
+const accountRoutes = require("./routes/account");
+const { authenticateToken } = require("./middleware/auth");
 
 const app = express();
 
@@ -13,8 +16,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use("/api/tasks", taskRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", authenticateToken, taskRoutes);
+app.use("/api/users", authenticateToken, userRoutes);
+app.use("/api/account", accountRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
