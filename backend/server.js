@@ -19,8 +19,18 @@ app.get("/health", (req, res) => {
   res.json({ status: "Server is running" });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(500).json({ 
+    error: "Internal Server Error",
+    message: err.message 
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Database: ${process.env.DB_NAME} @ ${process.env.DB_HOST}`);
 });
