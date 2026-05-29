@@ -16,6 +16,12 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
     );
   }
 
+  const toDatetimeLocal = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toISOString().slice(0, 16);
+  };
+
   const startEdit = (task) => {
     setEditingId(task.id);
     setEditData({
@@ -23,6 +29,7 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
       description: task.description || "",
       status: task.status,
       timeSpent: task.timeSpent || 0,
+      completedAt: toDatetimeLocal(task.completedAt),
     });
   };
 
@@ -31,9 +38,15 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
     setEditData({});
   };
 
+  const nowLocal = () => new Date().toISOString().slice(0, 16);
+
   const saveEdit = (task) => {
     if (editData.status === "completed" && task.status !== "completed") {
-      setPendingUpdate({ id: task.id, data: editData });
+      const dataWithDate = {
+        ...editData,
+        completedAt: editData.completedAt || nowLocal(),
+      };
+      setPendingUpdate({ id: task.id, data: dataWithDate });
       setTimeInput("");
       setShowTimeModal(true);
     } else {
@@ -45,7 +58,11 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
   const handleStatusChange = (task, newStatus) => {
     if (editingId === task.id) {
       if (newStatus === "completed" && task.status !== "completed") {
-        const updated = { ...editData, status: newStatus };
+        const updated = {
+          ...editData,
+          status: newStatus,
+          completedAt: editData.completedAt || nowLocal(),
+        };
         setEditData(updated);
         setPendingUpdate({ id: task.id, data: updated });
         setTimeInput("");
@@ -62,6 +79,7 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
             description: task.description,
             status: newStatus,
             timeSpent: task.timeSpent || 0,
+            completedAt: nowLocal(),
           },
         });
         setTimeInput("");
@@ -201,7 +219,23 @@ function TaskTable({ tasks, onDeleteTask, onUpdateTask }) {
                   <td className="col-date">{formatDate(task.createdAt)}</td>
 
                   {/* Completed */}
-                  <td className="col-date">{formatDate(task.completedAt)}</td>
+                  <td className="col-date">
+                    {isEditing ? (
+                      <input
+                        type="datetime-local"
+                        className="table-input"
+                        value={editData.completedAt}
+                        onChange={(e) =>
+                          setEditData((p) => ({
+                            ...p,
+                            completedAt: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      formatDate(task.completedAt)
+                    )}
+                  </td>
 
                   {/* Actions */}
                   <td className="col-actions">

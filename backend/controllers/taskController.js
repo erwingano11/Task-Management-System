@@ -82,7 +82,8 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, status, assignedTo, timeSpent } = req.body;
+    const { title, description, status, assignedTo, timeSpent, completedAt } =
+      req.body;
     const connection = await pool.getConnection();
 
     // Build dynamic update query based on provided fields
@@ -100,10 +101,14 @@ const updateTask = async (req, res) => {
     if (status !== undefined) {
       updates.push("status = ?");
       params.push(status);
-      // Set completedAt when status changes to 'completed'
-      if (status === "completed") {
+      // Auto-set completedAt when status changes to 'completed' and no explicit value provided
+      if (status === "completed" && completedAt === undefined) {
         updates.push("completedAt = NOW()");
       }
+    }
+    if (completedAt !== undefined) {
+      updates.push("completedAt = ?");
+      params.push(completedAt || null);
     }
     if (assignedTo !== undefined) {
       updates.push("assignedTo = ?");

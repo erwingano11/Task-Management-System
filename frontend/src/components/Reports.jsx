@@ -36,12 +36,13 @@ function Reports({ tasks, user }) {
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((task) => {
-        const d = new Date(task.createdAt);
+        if (!task.completedAt) return false;
+        const d = new Date(task.completedAt);
         return (
           d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
         );
       })
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      .sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
   }, [tasks, selectedMonth, selectedYear]);
 
   const totalHours = filteredTasks.reduce(
@@ -102,7 +103,7 @@ function Reports({ tasks, user }) {
 
     // Table
     const tableBody = filteredTasks.map((task) => [
-      formatDate(task.createdAt),
+      formatDate(task.completedAt),
       task.title,
       task.description || "—",
       formatHours(task.timeSpent),
@@ -264,7 +265,7 @@ function Reports({ tasks, user }) {
             <tbody>
               {filteredTasks.map((task) => (
                 <tr key={task.id}>
-                  <td className="col-date">{formatDate(task.createdAt)}</td>
+                  <td className="col-date">{formatDate(task.completedAt)}</td>
                   <td className="col-task">{task.title}</td>
                   <td className="col-desc">{task.description || "—"}</td>
                   <td className="col-hours">{formatHours(task.timeSpent)}</td>

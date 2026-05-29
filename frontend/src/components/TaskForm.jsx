@@ -9,6 +9,8 @@ function TaskForm({ onAddTask, token }) {
     status: "pending",
     assignedTo: "",
   });
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -37,29 +39,55 @@ function TaskForm({ onAddTask, token }) {
       ...prev,
       [name]: value,
     }));
+    // Clear the error for this field as the user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.title.trim()) {
+      newErrors.title = "Task title is required.";
+    } else if (formData.title.trim().length > 200) {
+      newErrors.title = "Title must be 200 characters or fewer.";
+    }
+    if (formData.description.length > 1000) {
+      newErrors.description = "Description must be 1000 characters or fewer.";
+    }
+    if (!formData.assignedTo) {
+      newErrors.assignedTo = "Please assign this task to a member.";
+    }
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!formData.title.trim()) {
-      alert("Please enter a task title");
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
     onAddTask(formData);
-
+    setErrors({});
     setFormData({
       title: "",
       description: "",
       status: "pending",
       assignedTo: "",
     });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 4000);
   };
 
   return (
     <form className="task-form" onSubmit={handleSubmit}>
       <h2>Create New Task</h2>
+
+      {success && (
+        <div className="form-success">Task created successfully!</div>
+      )}
 
       <div className="form-group">
         <label htmlFor="title">Task Title *</label>
@@ -70,8 +98,9 @@ function TaskForm({ onAddTask, token }) {
           value={formData.title}
           onChange={handleChange}
           placeholder="Enter task title"
-          required
+          className={errors.title ? "input-error" : ""}
         />
+        {errors.title && <span className="field-error">{errors.title}</span>}
       </div>
 
       <div className="form-group">
@@ -83,7 +112,11 @@ function TaskForm({ onAddTask, token }) {
           onChange={handleChange}
           placeholder="Enter task description"
           rows="4"
+          className={errors.description ? "input-error" : ""}
         />
+        {errors.description && (
+          <span className="field-error">{errors.description}</span>
+        )}
       </div>
 
       <div className="form-row">
@@ -102,20 +135,24 @@ function TaskForm({ onAddTask, token }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="assignedTo">Assigned To</label>
+          <label htmlFor="assignedTo">Assigned To *</label>
           <select
             id="assignedTo"
             name="assignedTo"
             value={formData.assignedTo}
             onChange={handleChange}
+            className={errors.assignedTo ? "input-error" : ""}
           >
-            <option value="">-- No Assignment --</option>
+            <option value="">-- Select a member --</option>
             {users.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.name} ({user.email})
               </option>
             ))}
           </select>
+          {errors.assignedTo && (
+            <span className="field-error">{errors.assignedTo}</span>
+          )}
         </div>
       </div>
 

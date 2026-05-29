@@ -47,6 +47,22 @@ function App() {
     setError(null);
   };
 
+  // Authenticated fetch that auto-logouts on 401/403 (expired/invalid token)
+  const authFetch = async (url, options = {}) => {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...options.headers,
+      },
+    });
+    if (response.status === 401 || response.status === 403) {
+      handleLogout();
+      throw new Error("Session expired. Please log in again.");
+    }
+    return response;
+  };
+
   const handleSwitchWorkspace = async (accountId) => {
     try {
       const res = await fetch(`/api/account/switch/${accountId}`, {
@@ -107,9 +123,7 @@ function App() {
       if (isApiReady) {
         // Always refresh role from profile to catch stale localStorage
         try {
-          const res = await fetch("/api/account/profile", {
-            headers: getAuthHeaders(),
-          });
+          const res = await authFetch("/api/account/profile");
           if (res.ok) {
             const profile = await res.json();
             const updated = {
@@ -120,12 +134,12 @@ function App() {
             localStorage.setItem("user", JSON.stringify(updated));
             setUser(updated);
           }
-        } catch (_) {}
+        } catch (_) {
+          return;
+        }
         // Fetch account/workspace name for sidebar
         try {
-          const res = await fetch("/api/account/info", {
-            headers: getAuthHeaders(),
-          });
+          const res = await authFetch("/api/account/info");
           if (res.ok) {
             const info = await res.json();
             setAccountName(info.name);
@@ -133,9 +147,7 @@ function App() {
         } catch (_) {}
         // Fetch all workspaces for the switcher
         try {
-          const res = await fetch("/api/account/my-workspaces", {
-            headers: getAuthHeaders(),
-          });
+          const res = await authFetch("/api/account/my-workspaces");
           if (res.ok) setWorkspaces(await res.json());
         } catch (_) {}
         fetchTasks();
@@ -152,9 +164,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/tasks", {
-        headers: getAuthHeaders(),
-      });
+      const response = await authFetch("/api/tasks");
       if (!response.ok) {
         throw new Error(`Server responded with status ${response.status}`);
       }
@@ -273,10 +283,7 @@ function App() {
 
           {section === "new-task" && (
             <TaskForm
-              onAddTask={(task) => {
-                handleAddTask(task);
-                setSection("tasks");
-              }}
+              onAddTask={handleAddTask}
               token={localStorage.getItem("token")}
             />
           )}

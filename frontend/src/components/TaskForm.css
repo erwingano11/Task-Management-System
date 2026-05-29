@@ -42,6 +42,27 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.input-error {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+}
+
+.field-error {
+  margin-top: 0.3rem;
+  font-size: 0.825rem;
+  color: #e53e3e;
+}
+
+.form-success {
+  background: #f0fff4;
+  border: 1px solid #68d391;
+  color: #276749;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

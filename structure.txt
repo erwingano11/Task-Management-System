@@ -4,3 +4,9 @@ Support for multiple users under one account
 User roles and permissions (Admin, Manager, Member)
 User invitation and access management
 Profile settings and account dashboard
+
+
+On One account
+    There is 1 or more users
+    if newly registered it should be in new account
+    

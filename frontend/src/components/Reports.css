@@ -159,7 +159,7 @@
 
 .col-date  { white-space: nowrap; color: #666; width: 110px; }
 .col-task  { font-weight: 500; width: 180px; }
-.col-desc  { color: #555; }
+.col-desc  { color: #555; white-space: pre-wrap; word-break: break-word; }
 .col-hours { width: 70px; font-variant-numeric: tabular-nums; }
 
 /* Footer rows */

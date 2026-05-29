@@ -65,6 +65,8 @@
   margin: 0.5rem 0;
   font-size: 0.95rem;
   line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .task-assigned {
@@ -117,6 +119,26 @@
   font-size: 0.95rem;
   resize: vertical;
   min-height: 80px;
+}
+
+.edit-completed-at {
+  margin-bottom: 0.5rem;
+}
+
+.edit-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+
+.edit-datetime {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #667eea;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .edit-actions {

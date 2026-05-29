@@ -5,16 +5,28 @@ function TaskItem({ task, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [timeInput, setTimeInput] = useState("");
+  const toDatetimeLocal = (dateStr) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toISOString().slice(0, 16);
+  };
+
   const [editData, setEditData] = useState({
     title: task.title,
     description: task.description,
     status: task.status,
     timeSpent: task.timeSpent || 0,
+    completedAt: toDatetimeLocal(task.completedAt),
   });
 
   const handleStatusChange = (newStatus) => {
     if (newStatus === "completed" && editData.status !== "completed") {
-      // Show time modal when completing task
+      // Default completedAt to now if not already set
+      if (!editData.completedAt) {
+        setEditData((prev) => ({
+          ...prev,
+          completedAt: new Date().toISOString().slice(0, 16),
+        }));
+      }
       setShowTimeModal(true);
       setTimeInput("");
     } else {
@@ -41,6 +53,8 @@ function TaskItem({ task, onDelete, onUpdate }) {
       ...editData,
       status: "completed",
       timeSpent: minutes,
+      completedAt:
+        editData.completedAt || new Date().toISOString().slice(0, 16),
     };
     setEditData(updatedData);
     onUpdate(task.id, updatedData);
@@ -102,6 +116,20 @@ function TaskItem({ task, onDelete, onUpdate }) {
             }
             className="edit-description"
           />
+          <div className="edit-completed-at">
+            <label className="edit-label">Completed At</label>
+            <input
+              type="datetime-local"
+              value={editData.completedAt}
+              onChange={(e) =>
+                setEditData((prev) => ({
+                  ...prev,
+                  completedAt: e.target.value,
+                }))
+              }
+              className="edit-datetime"
+            />
+          </div>
           <div className="edit-actions">
             <button className="save-btn" onClick={handleSaveEdit}>
               Save
