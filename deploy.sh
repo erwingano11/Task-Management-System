@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 # deploy.sh — Run this on the server to deploy wms.zeveph.com
 # Usage: bash deploy.sh
 set -e
@@ -56,17 +56,20 @@ else
   pm2 startup   # follow the printed command to enable auto-start on reboot
 fi
 
-# ── 6. Nginx config ─────────────────────────────────────────────────────────
-if [ ! -f "/etc/nginx/sites-enabled/wms.zeveph.com" ]; then
-  echo "==> Installing Nginx config..."
-  sudo cp "$APP_DIR/nginx/wms.zeveph.com.conf" /etc/nginx/sites-available/wms.zeveph.com
-  sudo ln -sf /etc/nginx/sites-available/wms.zeveph.com /etc/nginx/sites-enabled/
-  sudo nginx -t && sudo systemctl reload nginx
+# ── 6. Apache config ────────────────────────────────────────────────────────
+# Enable required modules (safe to run multiple times)
+sudo a2enmod proxy proxy_http headers rewrite 2>/dev/null || true
+
+if [ ! -f "/etc/apache2/sites-enabled/wms.zeveph.com.conf" ]; then
+  echo "==> Installing Apache config..."
+  sudo cp "$APP_DIR/nginx/wms.zeveph.com.conf" /etc/apache2/sites-available/wms.zeveph.com.conf
+  sudo a2ensite wms.zeveph.com.conf
+  sudo apache2ctl configtest && sudo systemctl reload apache2
   echo ""
   echo "==> Obtain SSL cert with Certbot:"
-  echo "    sudo certbot --nginx -d wms.zeveph.com"
+  echo "    sudo certbot --apache -d wms.zeveph.com"
 else
-  sudo nginx -t && sudo systemctl reload nginx
+  sudo apache2ctl configtest && sudo systemctl reload apache2
 fi
 
 echo ""
