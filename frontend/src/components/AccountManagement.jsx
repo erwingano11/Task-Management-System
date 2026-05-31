@@ -160,7 +160,7 @@ function AccountManagement({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      const link = `${window.location.origin}${data.inviteLink}`;
+      const link = data.inviteLink;
       setInviteLink(link);
       setInviteEmail("");
       setInviteRole("member");
@@ -446,12 +446,21 @@ function AccountManagement({
                       <td>{formatDate(inv.expiresAt)}</td>
                       <td>
                         {inv.status === "pending" && (
-                          <button
-                            className="btn-remove"
-                            onClick={() => handleRevokeInvitation(inv.id)}
-                          >
-                            Revoke
-                          </button>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <button
+                              className="btn-copy"
+                              onClick={() => copyToClipboard(inv.inviteLink)}
+                              title={inv.inviteLink}
+                            >
+                              Copy Link
+                            </button>
+                            <button
+                              className="btn-remove"
+                              onClick={() => handleRevokeInvitation(inv.id)}
+                            >
+                              Revoke
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

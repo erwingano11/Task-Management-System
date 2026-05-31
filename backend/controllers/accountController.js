@@ -324,10 +324,12 @@ const inviteUser = async (req, res) => {
       ],
     );
     connection.release();
+    const appUrl =
+      process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
     res.status(201).json({
       message: "Invitation created.",
       token,
-      inviteLink: `/accept-invite?token=${token}`,
+      inviteLink: `${appUrl}/accept-invite?token=${token}`,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -343,13 +345,25 @@ const getInvitations = async (req, res) => {
     );
     const [invitations] = await connection.query(
       `SELECT i.id, i.email, i.role, i.status, i.expiresAt, i.createdAt,
-              u.name AS invitedByName
+              u.name AS invitedByName,
+              i.token
        FROM invitations i LEFT JOIN users u ON u.id = i.invitedBy
        WHERE i.accountId = ? ORDER BY i.createdAt DESC`,
       [req.user.accountId],
     );
+    console.log("Invitations fetched:", invitations);
+    const appUrl =
+      process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const result = invitations.map((inv) => ({
+      ...inv,
+      inviteLink:
+        inv.token && inv.status === "pending"
+          ? `${appUrl}/accept-invite?token=${inv.token}`
+          : null,
+      token: undefined,
+    }));
     connection.release();
-    res.json(invitations);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
