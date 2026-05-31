@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "wms-backend",
       script: "server.js",
-      cwd: "/var/www/wms/backend",
+      cwd: "/var/www/Task-Management-System/backend",
       instances: 1,
       autorestart: true,
       watch: false,

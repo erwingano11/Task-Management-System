@@ -3,7 +3,7 @@
 # Usage: bash deploy.sh
 set -e
 
-APP_DIR="/var/www/wms"
+APP_DIR="/var/www/Task-Management-System"
 REPO_URL="https://github.com/YOUR_USERNAME/YOUR_REPO.git"  # <-- update this
 
 echo "==> Deploying Work Management System to wms.zeveph.com"
