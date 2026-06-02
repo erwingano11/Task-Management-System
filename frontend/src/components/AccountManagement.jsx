@@ -34,8 +34,10 @@ function AccountManagement({
   // Billing contact state
   const [billingName, setBillingName] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
+  const [billingCompany, setBillingCompany] = useState("");
   const [billingNameInput, setBillingNameInput] = useState("");
   const [billingEmailInput, setBillingEmailInput] = useState("");
+  const [billingCompanyInput, setBillingCompanyInput] = useState("");
   const [editingBilling, setEditingBilling] = useState(false);
   const [savingBilling, setSavingBilling] = useState(false);
 
@@ -80,8 +82,10 @@ function AccountManagement({
       setAccountNameInput(data.name);
       setBillingName(data.billingName || "");
       setBillingEmail(data.billingEmail || "");
+      setBillingCompany(data.billingCompany || "");
       setBillingNameInput(data.billingName || "");
       setBillingEmailInput(data.billingEmail || "");
+      setBillingCompanyInput(data.billingCompany || "");
     } catch (_) {}
   };
 
@@ -241,14 +245,17 @@ function AccountManagement({
           name: accountName,
           billingName: billingNameInput.trim(),
           billingEmail: billingEmailInput.trim(),
+          billingCompany: billingCompanyInput.trim(),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setBillingName(data.billingName || "");
       setBillingEmail(data.billingEmail || "");
+      setBillingCompany(data.billingCompany || "");
       setBillingNameInput(data.billingName || "");
       setBillingEmailInput(data.billingEmail || "");
+      setBillingCompanyInput(data.billingCompany || "");
       setEditingBilling(false);
       showSuccess("Billing contact updated.");
     } catch (e) {
@@ -681,6 +688,16 @@ function AccountManagement({
                     placeholder="billing@example.com"
                   />
                 </div>
+                <div className="form-row">
+                  <label htmlFor="billing-company">Company</label>
+                  <input
+                    id="billing-company"
+                    type="text"
+                    value={billingCompanyInput}
+                    onChange={(e) => setBillingCompanyInput(e.target.value)}
+                    placeholder="Company name"
+                  />
+                </div>
                 <div className="billing-form-actions">
                   <button
                     className="acct-btn-primary"
@@ -695,6 +712,7 @@ function AccountManagement({
                       setEditingBilling(false);
                       setBillingNameInput(billingName);
                       setBillingEmailInput(billingEmail);
+                      setBillingCompanyInput(billingCompany);
                     }}
                   >
                     Cancel
@@ -715,6 +733,14 @@ function AccountManagement({
                   <span className="billing-label">Email</span>
                   <span className="billing-value">
                     {billingEmail || (
+                      <span className="billing-empty">Not set</span>
+                    )}
+                  </span>
+                </div>
+                <div className="billing-field">
+                  <span className="billing-label">Company</span>
+                  <span className="billing-value">
+                    {billingCompany || (
                       <span className="billing-empty">Not set</span>
                     )}
                   </span>

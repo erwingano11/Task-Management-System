@@ -28,6 +28,19 @@ async function migrate() {
     }
   }
 
+  try {
+    await connection.query(
+      "ALTER TABLE accounts ADD COLUMN billingCompany VARCHAR(150) NULL AFTER billingEmail",
+    );
+    console.log("Added billingCompany column to accounts.");
+  } catch (e) {
+    if (e.code === "ER_DUP_FIELDNAME") {
+      console.log("billingCompany column already exists, skipping.");
+    } else {
+      throw e;
+    }
+  }
+
   connection.release();
   console.log("Migration complete.");
   process.exit(0);

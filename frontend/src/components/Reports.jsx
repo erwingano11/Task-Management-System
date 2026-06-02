@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Reports.css";
@@ -18,13 +18,23 @@ const MONTHS = [
   "December",
 ];
 
-function Reports({ tasks, user }) {
+function Reports({ tasks, user, billingInfo }) {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [rate, setRate] = useState(15);
   const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
   const [clientCompany, setClientCompany] = useState("");
+
+  // Pre-populate from workspace billing settings
+  useEffect(() => {
+    if (billingInfo) {
+      setClientName(billingInfo.billingName || "");
+      setClientEmail(billingInfo.billingEmail || "");
+      setClientCompany(billingInfo.billingCompany || "");
+    }
+  }, [billingInfo]);
 
   // Build year options: current year and 2 years back
   const yearOptions = [
@@ -98,8 +108,9 @@ function Reports({ tasks, user }) {
     doc.setFont("helvetica", "bold");
     doc.text("Bill To:", 110, 52);
     doc.setFont("helvetica", "normal");
-    doc.text(`Client: ${clientName || "—"}`, 110, 58);
-    doc.text(`Company: ${clientCompany || "—"}`, 110, 64);
+    doc.text(clientName || "—", 110, 58);
+    if (clientEmail) doc.text(clientEmail, 110, 64);
+    if (clientCompany) doc.text(clientCompany, 110, clientEmail ? 70 : 64);
 
     // Table
     const tableBody = filteredTasks.map((task) => [
@@ -205,6 +216,15 @@ function Reports({ tasks, user }) {
             />
           </div>
           <div className="control-item">
+            <label>Client Email</label>
+            <input
+              type="email"
+              placeholder="client@example.com"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+            />
+          </div>
+          <div className="control-item">
             <label>Company</label>
             <input
               type="text"
@@ -237,6 +257,7 @@ function Reports({ tasks, user }) {
                   {" "}
                   &nbsp;·&nbsp; Bill To: <strong>{clientName}</strong>
                   {clientCompany ? `, ${clientCompany}` : ""}
+                  {clientEmail ? ` (${clientEmail})` : ""}
                 </>
               )}
             </p>

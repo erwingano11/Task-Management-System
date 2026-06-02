@@ -10,7 +10,7 @@ const getAccountInfo = async (req, res) => {
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query(
-      "SELECT id, name, billingName, billingEmail, createdAt FROM accounts WHERE id = ?",
+      "SELECT id, name, billingName, billingEmail, billingCompany, createdAt FROM accounts WHERE id = ?",
       [req.user.accountId],
     );
     connection.release();
@@ -25,7 +25,7 @@ const getAccountInfo = async (req, res) => {
 // PUT /api/account/info  (admin only)
 const updateAccountInfo = async (req, res) => {
   try {
-    const { name, billingName, billingEmail } = req.body;
+    const { name, billingName, billingEmail, billingCompany } = req.body;
     if (!name || !name.trim())
       return res.status(400).json({ error: "Account name is required." });
     if (billingEmail && billingEmail.trim()) {
@@ -37,11 +37,12 @@ const updateAccountInfo = async (req, res) => {
     }
     const connection = await pool.getConnection();
     await connection.query(
-      "UPDATE accounts SET name = ?, billingName = ?, billingEmail = ? WHERE id = ?",
+      "UPDATE accounts SET name = ?, billingName = ?, billingEmail = ?, billingCompany = ? WHERE id = ?",
       [
         name.trim(),
         billingName ? billingName.trim() : null,
         billingEmail ? billingEmail.trim() : null,
+        billingCompany ? billingCompany.trim() : null,
         req.user.accountId,
       ],
     );
@@ -51,6 +52,7 @@ const updateAccountInfo = async (req, res) => {
       name: name.trim(),
       billingName: billingName ? billingName.trim() : null,
       billingEmail: billingEmail ? billingEmail.trim() : null,
+      billingCompany: billingCompany ? billingCompany.trim() : null,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -20,6 +20,11 @@ function App() {
   const [section, setSection] = useState("dashboard");
   const [accountName, setAccountName] = useState("");
   const [workspaces, setWorkspaces] = useState([]);
+  const [billingInfo, setBillingInfo] = useState({
+    billingName: "",
+    billingEmail: "",
+    billingCompany: "",
+  });
 
   const storedUser = localStorage.getItem("user");
   const [user, setUser] = useState(storedUser ? JSON.parse(storedUser) : null);
@@ -44,6 +49,7 @@ function App() {
     setTasks([]);
     setWorkspaces([]);
     setAccountName("");
+    setBillingInfo({ billingName: "", billingEmail: "", billingCompany: "" });
     setError(null);
   };
 
@@ -85,7 +91,15 @@ function App() {
           Authorization: `Bearer ${data.token}`,
         },
       });
-      if (infoRes.ok) setAccountName((await infoRes.json()).name);
+      if (infoRes.ok) {
+        const info = await infoRes.json();
+        setAccountName(info.name);
+        setBillingInfo({
+          billingName: info.billingName || "",
+          billingEmail: info.billingEmail || "",
+          billingCompany: info.billingCompany || "",
+        });
+      }
       // Re-fetch tasks in new workspace context
       setTimeout(() => fetchTasks(), 0);
     } catch (_) {}
@@ -143,6 +157,11 @@ function App() {
           if (res.ok) {
             const info = await res.json();
             setAccountName(info.name);
+            setBillingInfo({
+              billingName: info.billingName || "",
+              billingEmail: info.billingEmail || "",
+              billingCompany: info.billingCompany || "",
+            });
           }
         } catch (_) {}
         // Fetch all workspaces for the switcher
@@ -324,7 +343,7 @@ function App() {
           )}
           {section === "reports" &&
             (user?.role === "admin" || user?.role === "manager") && (
-              <Reports tasks={tasks} user={user} />
+              <Reports tasks={tasks} user={user} billingInfo={billingInfo} />
             )}
           {section === "reports" && user?.role === "member" && (
             <div style={{ padding: "2rem" }}>
