@@ -396,6 +396,93 @@
   cursor: not-allowed;
 }
 
+/* Secondary button */
+.acct-btn-secondary {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.acct-btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+/* Billing contact card */
+.billing-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px 24px;
+  max-width: 520px;
+  margin-top: 20px;
+}
+
+.billing-card-header {
+  margin-bottom: 18px;
+}
+
+.billing-card-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.billing-card-desc {
+  font-size: 0.83rem;
+  color: #6b7280;
+}
+
+.billing-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billing-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.billing-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.billing-value {
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.billing-empty {
+  color: #9ca3af;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.billing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.billing-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 /* Invite link box */
 .invite-link-box {
   margin-top: 20px;

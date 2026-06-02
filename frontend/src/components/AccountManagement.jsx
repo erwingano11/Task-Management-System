@@ -31,6 +31,14 @@ function AccountManagement({
   const [accountNameInput, setAccountNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
 
+  // Billing contact state
+  const [billingName, setBillingName] = useState("");
+  const [billingEmail, setBillingEmail] = useState("");
+  const [billingNameInput, setBillingNameInput] = useState("");
+  const [billingEmailInput, setBillingEmailInput] = useState("");
+  const [editingBilling, setEditingBilling] = useState(false);
+  const [savingBilling, setSavingBilling] = useState(false);
+
   // Invite form state
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
@@ -70,6 +78,10 @@ function AccountManagement({
       const data = await res.json();
       setAccountName(data.name);
       setAccountNameInput(data.name);
+      setBillingName(data.billingName || "");
+      setBillingEmail(data.billingEmail || "");
+      setBillingNameInput(data.billingName || "");
+      setBillingEmailInput(data.billingEmail || "");
     } catch (_) {}
   };
 
@@ -199,7 +211,11 @@ function AccountManagement({
       const res = await fetch("/api/account/info", {
         method: "PUT",
         headers: headers(),
-        body: JSON.stringify({ name: accountNameInput.trim() }),
+        body: JSON.stringify({
+          name: accountNameInput.trim(),
+          billingName,
+          billingEmail,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -211,6 +227,34 @@ function AccountManagement({
       setError(e.message);
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const handleSaveBilling = async () => {
+    setSavingBilling(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/account/info", {
+        method: "PUT",
+        headers: headers(),
+        body: JSON.stringify({
+          name: accountName,
+          billingName: billingNameInput.trim(),
+          billingEmail: billingEmailInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setBillingName(data.billingName || "");
+      setBillingEmail(data.billingEmail || "");
+      setBillingNameInput(data.billingName || "");
+      setBillingEmailInput(data.billingEmail || "");
+      setEditingBilling(false);
+      showSuccess("Billing contact updated.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSavingBilling(false);
     }
   };
 
@@ -313,6 +357,14 @@ function AccountManagement({
         >
           My Invitation
         </button>
+        {isAdmin && (
+          <button
+            className={`acct-tab ${tab === "settings" ? "active" : ""}`}
+            onClick={() => setTab("settings")}
+          >
+            Settings
+          </button>
+        )}
       </div>
 
       {tab === "members" && (
@@ -590,6 +642,92 @@ function AccountManagement({
               </table>
             </div>
           )}
+        </div>
+      )}
+      {tab === "settings" && isAdmin && (
+        <div className="acct-section">
+          <h3>Workspace Settings</h3>
+          <p className="acct-subtitle">
+            Configure billing contact details for this workspace.
+          </p>
+
+          <div className="billing-card">
+            <div className="billing-card-header">
+              <span className="billing-card-title">Billing Contact</span>
+              <span className="billing-card-desc">
+                The person responsible for receiving billing communications.
+              </span>
+            </div>
+
+            {editingBilling ? (
+              <div className="billing-form">
+                <div className="form-row">
+                  <label htmlFor="billing-name">Name</label>
+                  <input
+                    id="billing-name"
+                    type="text"
+                    value={billingNameInput}
+                    onChange={(e) => setBillingNameInput(e.target.value)}
+                    placeholder="Full name"
+                  />
+                </div>
+                <div className="form-row">
+                  <label htmlFor="billing-email">Email</label>
+                  <input
+                    id="billing-email"
+                    type="email"
+                    value={billingEmailInput}
+                    onChange={(e) => setBillingEmailInput(e.target.value)}
+                    placeholder="billing@example.com"
+                  />
+                </div>
+                <div className="billing-form-actions">
+                  <button
+                    className="acct-btn-primary"
+                    onClick={handleSaveBilling}
+                    disabled={savingBilling}
+                  >
+                    {savingBilling ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    className="acct-btn-secondary"
+                    onClick={() => {
+                      setEditingBilling(false);
+                      setBillingNameInput(billingName);
+                      setBillingEmailInput(billingEmail);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="billing-display">
+                <div className="billing-field">
+                  <span className="billing-label">Name</span>
+                  <span className="billing-value">
+                    {billingName || (
+                      <span className="billing-empty">Not set</span>
+                    )}
+                  </span>
+                </div>
+                <div className="billing-field">
+                  <span className="billing-label">Email</span>
+                  <span className="billing-value">
+                    {billingEmail || (
+                      <span className="billing-empty">Not set</span>
+                    )}
+                  </span>
+                </div>
+                <button
+                  className="acct-btn-edit"
+                  onClick={() => setEditingBilling(true)}
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

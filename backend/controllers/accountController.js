@@ -10,7 +10,7 @@ const getAccountInfo = async (req, res) => {
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query(
-      "SELECT id, name, createdAt FROM accounts WHERE id = ?",
+      "SELECT id, name, billingName, billingEmail, createdAt FROM accounts WHERE id = ?",
       [req.user.accountId],
     );
     connection.release();
@@ -25,16 +25,33 @@ const getAccountInfo = async (req, res) => {
 // PUT /api/account/info  (admin only)
 const updateAccountInfo = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, billingName, billingEmail } = req.body;
     if (!name || !name.trim())
       return res.status(400).json({ error: "Account name is required." });
+    if (billingEmail && billingEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(billingEmail.trim()))
+        return res
+          .status(400)
+          .json({ error: "Invalid billing email address." });
+    }
     const connection = await pool.getConnection();
-    await connection.query("UPDATE accounts SET name = ? WHERE id = ?", [
-      name.trim(),
-      req.user.accountId,
-    ]);
+    await connection.query(
+      "UPDATE accounts SET name = ?, billingName = ?, billingEmail = ? WHERE id = ?",
+      [
+        name.trim(),
+        billingName ? billingName.trim() : null,
+        billingEmail ? billingEmail.trim() : null,
+        req.user.accountId,
+      ],
+    );
     connection.release();
-    res.json({ message: "Account name updated.", name: name.trim() });
+    res.json({
+      message: "Account info updated.",
+      name: name.trim(),
+      billingName: billingName ? billingName.trim() : null,
+      billingEmail: billingEmail ? billingEmail.trim() : null,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
