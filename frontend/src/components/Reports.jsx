@@ -3,25 +3,27 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Reports.css";
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const toDateInputValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const toLocalDateInputValue = (dateString) => {
+  const date = new Date(dateString);
+  return Number.isNaN(date.getTime()) ? "" : toDateInputValue(date);
+};
 
 function Reports({ tasks, user, billingInfo }) {
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const startOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1,
+  );
+  const [dateFrom, setDateFrom] = useState(toDateInputValue(startOfMonth));
+  const [dateTo, setDateTo] = useState(toDateInputValue(currentDate));
   const [rate, setRate] = useState(15);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -36,24 +38,18 @@ function Reports({ tasks, user, billingInfo }) {
     }
   }, [billingInfo]);
 
-  // Build year options: current year and 2 years back
-  const yearOptions = [
-    currentDate.getFullYear() - 2,
-    currentDate.getFullYear() - 1,
-    currentDate.getFullYear(),
-  ];
-
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((task) => {
         if (!task.completedAt) return false;
-        const d = new Date(task.completedAt);
+        const completedDate = toLocalDateInputValue(task.completedAt);
         return (
-          d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
+          (!dateFrom || completedDate >= dateFrom) &&
+          (!dateTo || completedDate <= dateTo)
         );
       })
       .sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
-  }, [tasks, selectedMonth, selectedYear]);
+  }, [tasks, dateFrom, dateTo]);
 
   const totalHours = filteredTasks.reduce(
     (sum, t) => sum + (t.timeSpent || 0) / 60,
@@ -63,6 +59,7 @@ function Reports({ tasks, user, billingInfo }) {
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
+    if (!dateStr || Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -77,8 +74,8 @@ function Reports({ tasks, user, billingInfo }) {
 
   const handleDownload = () => {
     const doc = new jsPDF();
-    const billingPeriod = `${MONTHS[selectedMonth]} ${selectedYear}`;
-    const invoiceNo = `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-${String(Math.floor(Math.random() * 90) + 10)}`;
+    const billingPeriod = `${formatDate(dateFrom) || "Start"} - ${formatDate(dateTo) || "Present"}`;
+    const invoiceNo = `${dateFrom || "open"}-${dateTo || "open"}-${String(Math.floor(Math.random() * 90) + 10)}`;
     const today = new Date().toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
@@ -171,30 +168,24 @@ function Reports({ tasks, user, billingInfo }) {
       <div className="reports-controls">
         <div className="controls-group">
           <div className="control-item">
-            <label>Month</label>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            >
-              {MONTHS.map((m, i) => (
-                <option key={m} value={i}>
-                  {m}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="report-date-from">Date from</label>
+            <input
+              id="report-date-from"
+              type="date"
+              value={dateFrom}
+              max={dateTo || undefined}
+              onChange={(e) => setDateFrom(e.target.value)}
+            />
           </div>
           <div className="control-item">
-            <label>Year</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="report-date-to">Date to</label>
+            <input
+              id="report-date-to"
+              type="date"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={(e) => setDateTo(e.target.value)}
+            />
           </div>
           <div className="control-item">
             <label>Rate / hr ($)</label>
@@ -250,7 +241,8 @@ function Reports({ tasks, user, billingInfo }) {
           <div>
             <h3>Invoice</h3>
             <p className="preview-meta">
-              {MONTHS[selectedMonth]} {selectedYear} &nbsp;·&nbsp; Biller:{" "}
+              {formatDate(dateFrom) || "Start"} -{" "}
+              {formatDate(dateTo) || "Present"} &nbsp;·&nbsp; Biller:{" "}
               <strong>{user?.name}</strong>
               {clientName && (
                 <>
@@ -271,7 +263,7 @@ function Reports({ tasks, user, billingInfo }) {
 
         {filteredTasks.length === 0 ? (
           <div className="no-report-data">
-            No tasks found for {MONTHS[selectedMonth]} {selectedYear}.
+            No tasks found for the selected date range.
           </div>
         ) : (
           <table className="report-table">
